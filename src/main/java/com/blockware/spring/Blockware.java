@@ -8,7 +8,6 @@ public class Blockware {
     public static void run(Class<?> mainClass, String[] args) {
         final SpringApplication application = new SpringApplication(mainClass);
         application.addListeners(new BlockwareConfigSourceLoader());
-
         application.run(args);
     }
 }

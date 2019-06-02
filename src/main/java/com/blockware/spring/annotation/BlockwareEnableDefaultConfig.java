@@ -1,6 +1,6 @@
 package com.blockware.spring.annotation;
 
-import com.blockware.spring.config.BaseConfig;
+import com.blockware.spring.config.BlockwareDefaultConfig;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;
@@ -9,6 +9,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
-@Import({BaseConfig.class})
-public @interface BlockwareEnableConfig {
+@Import({BlockwareDefaultConfig.class})
+public @interface BlockwareEnableDefaultConfig {
 }

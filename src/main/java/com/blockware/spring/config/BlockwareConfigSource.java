@@ -4,33 +4,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertySource;
-import org.springframework.util.StringUtils;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-public class BlockwareConfigSource extends PropertySource<URL> {
+abstract public class BlockwareConfigSource extends PropertySource<Object> {
 
     private static final Logger log = LoggerFactory.getLogger(BlockwareConfigSource.class);
 
-    public static final String BLOCKWARE_CONFIG_SERVICE = "BLOCKWARE_CONFIG_SERVICE";
+    public static final String BLOCKWARE_CONFIG_NAME = "BLOCKWARE_CONFIG";
 
-    public static final String BLOCKWARE_CONFIG_SERVICE_DEFAULT = "http://localhost:30033/";
+    protected final String serviceName;
 
-    private final String serviceName;
+    protected final Environment environment;
 
-    private Properties properties = new Properties();
-    
-    private final Environment environment;
+    protected Properties properties = new Properties();
 
     private boolean initialized;
     
-    public BlockwareConfigSource(String serviceName, Environment environment) throws MalformedURLException {
-        super("BLOCKWARE_SERVICE");
+    public BlockwareConfigSource(String serviceName, Environment environment) {
+        super(BLOCKWARE_CONFIG_NAME);
         this.environment = environment;
         this.serviceName = serviceName;
     }
@@ -40,57 +34,29 @@ public class BlockwareConfigSource extends PropertySource<URL> {
         return properties.get(name);
     }
 
-    private void applyConfigurationFromConfigService(Properties properties) throws MalformedURLException {
-        File file;
-        URL configUrl = getConfigServiceUrl();
-        
-        readConfigurationFromUrl(configUrl, properties);
+    public abstract int getServerPort();
+
+    public abstract String getClientAddress(String serviceName, String serviceType);
+
+    abstract void applyConfiguration(Properties properties) throws Exception;
+
+    abstract String getSourceId();
+
+    private void applyConfigurationFromConfigService(Properties properties) throws Exception {
+        applyConfiguration(properties);
 
         if (initialized) {
-            log.debug("Read config from: {}", configUrl);
+            log.debug("Read config from source: {}", getSourceId());
         } else {
-            log.info("Read config from: {}", configUrl);
+            log.info("Read config from source: {}", getSourceId());
         }
 
         int envVars = applyOverridesFromEnvironment();
         log.trace("Read {} 'BLOCKWARE_<section>_<key>=<value>' environment variables (overwrites values from files)", envVars);
     }
 
-    private void readConfigurationFromUrl(URL configUrl, Properties properties) {
-        switch (serviceName) {
-            case "todo":
-                properties.put("server.port", "6001");
-                break;
-            case "users":
-                properties.put("server.port", "6002");
-                break;
-        }
-    }
-
-    private String getPropertyValue(String key, String defaultValue) {
-        String value = System.getProperty(key);
-        if (!StringUtils.isEmpty(value)) {
-            return value;
-        }
-
-        value = System.getenv(key);
-
-        if (!StringUtils.isEmpty(value)) {
-            return value;
-        }
-
-        return environment.getProperty(key, defaultValue);
-    }
-
-    private URL getConfigServiceUrl() throws MalformedURLException {
-
-        String hostname = getPropertyValue(BLOCKWARE_CONFIG_SERVICE, BLOCKWARE_CONFIG_SERVICE_DEFAULT);
-
-        if (!hostname.endsWith("/")) {
-            hostname += "/";
-        }
-
-        return new URL(hostname + serviceName);
+    protected String getPropertyValue(String key, String defaultValue) {
+        return BlockwareConfigSourceLoader.getSystemConfiguration(environment, key, key.toUpperCase(), defaultValue);
     }
 
     private int applyOverridesFromEnvironment() {
@@ -126,7 +92,7 @@ public class BlockwareConfigSource extends PropertySource<URL> {
         return envVarsRead;
     }
 
-    private String resolveEnvironmentVariables(final String value){
+    protected String resolveEnvironmentVariables(final String value) {
         String[] tokens = value.split("%");
         if (tokens.length == 1) {
             return value;
@@ -148,7 +114,7 @@ public class BlockwareConfigSource extends PropertySource<URL> {
         return result;
     }
 
-    public synchronized void load() throws MalformedURLException {
+    public synchronized void load() throws Exception {
         applyConfigurationFromConfigService(properties);
 
         applyOverridesFromEnvironment(properties);
@@ -156,7 +122,7 @@ public class BlockwareConfigSource extends PropertySource<URL> {
         initialized = true;
     }
 
-    public synchronized void reload() throws MalformedURLException {
+    public synchronized void reload() throws Exception {
 
         Properties properties = new Properties();
 
