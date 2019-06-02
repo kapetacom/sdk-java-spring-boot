@@ -177,7 +177,7 @@ class BlockwareConfigSourceLocal extends BlockwareConfigSource {
     }
 
     private URL getConfigServiceUrl()  {
-        String urlStr = getConfigServiceBaseUrl();
+        String urlStr = getConfigServiceBaseUrl() + "/config";
         try {
             return new URL(urlStr);
         } catch (MalformedURLException e) {
