@@ -6,8 +6,8 @@
 
     <groupId>com.blockware.spring-boot</groupId>
     <artifactId>spring-boot</artifactId>
-    <packaging>pom</packaging>
-    <version>0.0.1</version>
+    <packaging>jar</packaging>
+    <version>0.0.3</version>
 
     <licenses>
         <license>
