@@ -1,6 +1,6 @@
 package com.blockware.spring.annotation;
 
-import com.blockware.spring.config.BlockwareDefaultConfig;
+import com.blockware.spring.cluster.BlockwareDefaultConfig;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;

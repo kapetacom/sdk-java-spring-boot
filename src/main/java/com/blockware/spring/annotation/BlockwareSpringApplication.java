@@ -32,6 +32,6 @@ import java.lang.annotation.*;
         @ComponentScan.Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class)
 })
 @BlockwareEnableDefaultConfig
-public @interface BlockwareApplication {
+public @interface BlockwareSpringApplication {
 
 }

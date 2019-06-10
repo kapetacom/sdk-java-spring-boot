@@ -1,4 +1,4 @@
-package com.blockware.spring.config;
+package com.blockware.spring.cluster;
 
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
