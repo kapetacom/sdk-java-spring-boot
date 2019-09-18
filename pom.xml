@@ -7,7 +7,7 @@
     <groupId>com.blockware.spring-boot</groupId>
     <artifactId>spring-boot</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
 
     <licenses>
         <license>

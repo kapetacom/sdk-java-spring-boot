@@ -56,8 +56,8 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    BlockwareClusterServiceLocal(String serviceName, String systemId, Environment environment) {
-        super(serviceName, systemId, environment);
+    BlockwareClusterServiceLocal(String blockRef, String systemId, String instanceId, Environment environment) {
+        super(blockRef, systemId, instanceId, environment);
     }
 
     @Override
@@ -76,7 +76,7 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
             serverPort = Integer.valueOf(sendGET(serverPortUrl));
             log.info("Got server port {} from config service: {}", serverPort, serverPortUrl);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to request server port for service: " + serviceName, e);
+            throw new RuntimeException("Failed to request server port for service: " + blockRef, e);
         }
 
         return serverPort;
@@ -104,7 +104,7 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
 
             return objectMapper.readValue(json, ResourceInfo.class);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to request client address port for service: " + serviceName, e);
+            throw new RuntimeException("Failed to request client address port for service: " + blockRef, e);
         }
     }
 
@@ -116,9 +116,6 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
 
         applyConfigurationFromUrl(configServiceUrl, properties);
 
-        final int serverPort = getServerPort();
-
-        properties.put(SERVER_PORT, serverPort);
     }
 
     private Properties getClusterConfig() {
@@ -223,6 +220,36 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
         return getClusterServiceBaseUrl();
     }
 
+
+    @Override
+    public synchronized void load() throws Exception {
+        super.load();
+
+        resolveIdentity();
+
+        final int serverPort = getServerPort();
+
+        properties.put(SERVER_PORT, serverPort);
+    }
+
+    /**
+     * Resolves identity based on available environment and local assets
+     *
+     * @throws IOException
+     */
+    private void resolveIdentity() throws IOException {
+
+        URL url = getIdentityUrl();
+        String identityJson = this.sendGET(url);
+
+        final Identity identity = objectMapper.readValue(identityJson, Identity.class);
+
+        log.info("Identity resolved: [system: {}] [instance: {}]", identity.systemId, identity.instanceId);
+
+        this.systemId = identity.systemId;
+        this.instanceId = identity.instanceId;
+    }
+
     private String getClusterServiceBaseUrl() {
 
         final Properties clusterConfig = getClusterConfig();
@@ -233,8 +260,7 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
     }
 
     private URL getConfigBaseUrl() {
-        String subPath = String.format("/config/%s", encode(serviceName));
-        String urlStr = getClusterServiceBaseUrl() + subPath;
+        String urlStr = getClusterServiceBaseUrl() + "/config";
         try {
             return new URL(urlStr);
         } catch (MalformedURLException e) {
@@ -268,8 +294,17 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
     private URL getResourceInfoUrl(String operatorType, String portType) {
 
         String subPath = String.format("/consumes/resource/%s/%s", encode(operatorType), encode(portType));
-        ;
         String urlStr = getConfigBaseUrl() + subPath;
+        try {
+            return new URL(urlStr);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Failed to use configuration url: " + urlStr, e);
+        }
+    }
+
+    private URL getIdentityUrl() {
+
+        String urlStr = getConfigBaseUrl() + "/identity";
         try {
             return new URL(urlStr);
         } catch (MalformedURLException e) {
@@ -282,6 +317,27 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
             return URLEncoder.encode(text.toLowerCase(), StandardCharsets.UTF_8.name());
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static class Identity {
+        private String systemId;
+        private String instanceId;
+
+        public String getSystemId() {
+            return systemId;
+        }
+
+        public void setSystemId(String systemId) {
+            this.systemId = systemId;
+        }
+
+        public String getInstanceId() {
+            return instanceId;
+        }
+
+        public void setInstanceId(String instanceId) {
+            this.instanceId = instanceId;
         }
     }
 }

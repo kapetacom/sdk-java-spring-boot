@@ -31,32 +31,49 @@ import java.util.Set;
 abstract public class BlockwareClusterService extends PropertySource<Object> {
     private static final Logger log = LoggerFactory.getLogger(BlockwareClusterService.class);
 
-    public static final String HEADER_BLOCKWARE_SERVICE = "X-Blockware-Service";
+    public static final String HEADER_BLOCKWARE_BLOCK = "X-Blockware-Block";
 
     public static final String HEADER_BLOCKWARE_SYSTEM = "X-Blockware-System";
 
+    public static final String HEADER_BLOCKWARE_INSTANCE = "X-Blockware-Instance";
+
     public static final String BLOCKWARE_CONFIG_NAME = "BLOCKWARE_CONFIG";
 
-    protected final String serviceName;
+    protected final String blockRef;
 
     protected final Environment environment;
 
-    protected final String systemId;
+    protected String systemId;
+
+    protected String instanceId;
 
     protected Properties properties = new Properties();
 
     private boolean initialized;
     
-    public BlockwareClusterService(String serviceName, String systemId, Environment environment) {
+    public BlockwareClusterService(String blockRef, String systemId, String instanceId, Environment environment) {
         super(BLOCKWARE_CONFIG_NAME);
         this.environment = environment;
-        this.serviceName = serviceName;
+        this.blockRef = blockRef;
         this.systemId = systemId;
+        this.instanceId = instanceId;
     }
 
     @Override
     public Object getProperty(String name) {
         return properties.get(name);
+    }
+
+    public String getBlockRef() {
+        return blockRef;
+    }
+
+    public String getSystemId() {
+        return systemId;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
     }
 
     /**
@@ -102,15 +119,6 @@ abstract public class BlockwareClusterService extends PropertySource<Object> {
     public abstract String getSourceId();
 
     /**
-     * Get unique system ID for the system in which this block is running.
-     *
-     * @return
-     */
-    public String getSystemId() {
-        return systemId;
-    }
-
-    /**
      * Helper method for sending a GET request to a URL which will include the proper headers etc.
      *
      * Returns the response body as a string
@@ -131,8 +139,9 @@ abstract public class BlockwareClusterService extends PropertySource<Object> {
      */
     protected InputStream sendGETStream(final URL url) throws IOException {
         final URLConnection connection = url.openConnection();
-        connection.addRequestProperty(HEADER_BLOCKWARE_SERVICE, serviceName);
-        connection.addRequestProperty(HEADER_BLOCKWARE_SYSTEM, getSystemId());
+        connection.addRequestProperty(HEADER_BLOCKWARE_BLOCK, blockRef);
+        connection.addRequestProperty(HEADER_BLOCKWARE_SYSTEM, systemId);
+        connection.addRequestProperty(HEADER_BLOCKWARE_INSTANCE, instanceId);
 
         return connection.getInputStream();
     }
@@ -216,6 +225,7 @@ abstract public class BlockwareClusterService extends PropertySource<Object> {
 
         initialized = true;
     }
+
 
     public synchronized void reload() throws Exception {
 
