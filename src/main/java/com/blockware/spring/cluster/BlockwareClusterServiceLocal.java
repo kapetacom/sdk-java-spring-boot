@@ -95,9 +95,9 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
     }
 
     @Override
-    public ResourceInfo getResourceInfo(String resourceType, String portType) {
+    public ResourceInfo getResourceInfo(String resourceType, String portType, String resourceName) {
 
-        final URL resourceInfoUrl = getResourceInfoUrl(resourceType, portType);
+        final URL resourceInfoUrl = getResourceInfoUrl(resourceType, portType, resourceName);
 
         try {
             final String json = sendGET(resourceInfoUrl);
@@ -291,9 +291,9 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
         }
     }
 
-    private URL getResourceInfoUrl(String operatorType, String portType) {
+    private URL getResourceInfoUrl(String operatorType, String portType, String resourceName) {
 
-        String subPath = String.format("/consumes/resource/%s/%s", encode(operatorType), encode(portType));
+        String subPath = String.format("/consumes/resource/%s/%s/%s", encode(operatorType), encode(portType), encode(resourceName));
         String urlStr = getConfigBaseUrl() + subPath;
         try {
             return new URL(urlStr);

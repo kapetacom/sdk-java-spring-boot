@@ -2,6 +2,7 @@ package com.blockware.spring.annotation;
 
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -25,7 +26,8 @@ import java.lang.annotation.*;
                 MongoDataAutoConfiguration.class,
                 MongoRepositoriesAutoConfiguration.class,
                 DataSourceAutoConfiguration.class,
-                JdbcTemplateAutoConfiguration.class
+                JdbcTemplateAutoConfiguration.class,
+                JpaRepositoriesAutoConfiguration.class
         }
 )
 @ComponentScan(excludeFilters = {

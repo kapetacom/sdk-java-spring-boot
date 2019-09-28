@@ -102,7 +102,7 @@ abstract public class BlockwareClusterService extends PropertySource<Object> {
      * @param portType
      * @return
      */
-    public abstract ResourceInfo getResourceInfo(String resourceType, String portType);
+    public abstract ResourceInfo getResourceInfo(String resourceType, String portType, String name);
 
     /**
      * Applies configuration values to the given properties object
@@ -307,5 +307,6 @@ abstract public class BlockwareClusterService extends PropertySource<Object> {
         public void setCredentials(Map<String, String> credentials) {
             this.credentials = credentials;
         }
+
     }
 }
