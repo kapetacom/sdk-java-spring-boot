@@ -51,6 +51,8 @@ public class BlockwareClusterServiceInitializer implements ApplicationListener<A
     public static final String DEFAULT_SYSTEM_ID = "";
     public static final String DEFAULT_INSTANCE_ID = "";
 
+    public static final String HEALTH_CHECK_ENDPOINT = "/__blockware/health";
+
     @Override
     public void onApplicationEvent(ApplicationPreparedEvent event) {
         final ConfigurableApplicationContext applicationContext = event.getApplicationContext();
@@ -105,8 +107,12 @@ public class BlockwareClusterServiceInitializer implements ApplicationListener<A
         }
 
         try {
-
             configSource.load();
+
+            //Tell the cluster service about this instance
+            configSource.registerInstance(HEALTH_CHECK_ENDPOINT);
+            Runtime.getRuntime().addShutdownHook(new Thread(configSource::instanceStopped));
+
             MutablePropertySources propertySources = environment.getPropertySources();
             propertySources.addFirst(configSource);
 
