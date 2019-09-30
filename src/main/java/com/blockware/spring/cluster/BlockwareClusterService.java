@@ -6,10 +6,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertySource;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -81,6 +83,17 @@ abstract public class BlockwareClusterService extends PropertySource<Object> {
      */
     public abstract int getServerPort();
 
+
+    /**
+     * Registers this instance with the cluster service
+     */
+    public abstract void registerInstance(String instanceHealthPath);
+
+    /**
+     * Tells the cluster service that this instance is stopped
+     */
+    public abstract void instanceStopped();
+
     /**
      * Gets the remote address for a given service name and port type.
      *
@@ -126,9 +139,27 @@ abstract public class BlockwareClusterService extends PropertySource<Object> {
      */
     protected String sendGET(final URL url) throws IOException {
 
-        try (InputStream stream = sendGETStream(url)) {
+        try (InputStream stream = sendRequestStream(url, "GET")) {
             return IOUtils.toString(stream, StandardCharsets.UTF_8);
         }
+    }
+
+    protected String sendDELETE(final URL url) throws IOException {
+
+        try (InputStream stream = sendRequestStream(url, "DELETE")) {
+            return IOUtils.toString(stream, StandardCharsets.UTF_8);
+        }
+    }
+
+    protected String sendPUT(final URL url, byte[] body) throws IOException {
+
+        try (InputStream stream = sendRequestStream(url, "PUT", new ByteArrayInputStream(body))) {
+            return IOUtils.toString(stream, StandardCharsets.UTF_8);
+        }
+    }
+
+    protected InputStream sendRequestStream(final URL url, String method) throws IOException {
+        return sendRequestStream(url, method, null);
     }
 
     /**
@@ -137,11 +168,20 @@ abstract public class BlockwareClusterService extends PropertySource<Object> {
      * Returns the response body as a stream
      *
      */
-    protected InputStream sendGETStream(final URL url) throws IOException {
-        final URLConnection connection = url.openConnection();
+    protected InputStream sendRequestStream(final URL url, String method, InputStream body) throws IOException {
+        final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        if (body != null) {
+            connection.setDoOutput(true);
+        }
+
+        connection.setRequestMethod(method);
         connection.addRequestProperty(HEADER_BLOCKWARE_BLOCK, blockRef);
         connection.addRequestProperty(HEADER_BLOCKWARE_SYSTEM, systemId);
         connection.addRequestProperty(HEADER_BLOCKWARE_INSTANCE, instanceId);
+
+        if (body != null) {
+            IOUtils.copy(body, connection.getOutputStream());
+        }
 
         return connection.getInputStream();
     }
@@ -245,6 +285,27 @@ abstract public class BlockwareClusterService extends PropertySource<Object> {
         log.debug("Reloaded configuration from config service");
     }
 
+
+    public static class InstanceInfo {
+
+        private String pid;
+
+        private String health;
+
+
+        public InstanceInfo(String pid, String health) {
+            this.pid = pid;
+            this.health = health;
+        }
+
+        public String getPid() {
+            return pid;
+        }
+
+        public String getHealth() {
+            return health;
+        }
+    }
 
     public static class ResourceInfo {
 

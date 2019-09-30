@@ -33,4 +33,9 @@ public class BlockwareDefaultConfig {
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         return mapper;
     }
+
+    @Bean
+    public BlockwareController blockwareController() {
+        return new BlockwareController();
+    }
 }
