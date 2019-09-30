@@ -3,6 +3,7 @@ package com.blockware.spring.cluster;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.system.ApplicationPid;
 import org.springframework.core.env.Environment;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.reader.UnicodeReader;
@@ -82,6 +83,33 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
         return serverPort;
     }
 
+
+
+    @Override
+    public void registerInstance(String instanceHealthPath) {
+        final URL instancesUrl = getInstancesUrl();
+
+        ApplicationPid pid = new ApplicationPid();
+        final InstanceInfo instanceInfo = new InstanceInfo(pid.toString(), instanceHealthPath);
+
+        try {
+            sendPUT(instancesUrl, objectMapper.writeValueAsBytes(instanceInfo));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to register instance with cluster service", e);
+        }
+
+    }
+
+    @Override
+    public void instanceStopped() {
+        final URL instancesUrl = getInstancesUrl();
+        try {
+            sendDELETE(instancesUrl);
+        } catch (IOException e) {
+            log.warn("Failed to unregister instance", e);
+        }
+    }
+
     @Override
     public String getServiceAddress(String serviceName, String portType) {
 
@@ -95,9 +123,9 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
     }
 
     @Override
-    public ResourceInfo getResourceInfo(String resourceType, String portType) {
+    public ResourceInfo getResourceInfo(String resourceType, String portType, String resourceName) {
 
-        final URL resourceInfoUrl = getResourceInfoUrl(resourceType, portType);
+        final URL resourceInfoUrl = getResourceInfoUrl(resourceType, portType, resourceName);
 
         try {
             final String json = sendGET(resourceInfoUrl);
@@ -144,7 +172,7 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
 
     private void applyConfigurationFromUrl(URL configUrl, Properties properties) throws ClusterServiceUnavailableException {
 
-        try (InputStream stream = sendGETStream(configUrl)) {
+        try (InputStream stream = sendRequestStream(configUrl, "GET")) {
             readYAMLFromStream(stream, properties);
         } catch (ConnectException ex) {
             throw new ClusterServiceUnavailableException("Failed to connect to cluster service. Verify that it's running and available here: " + getClusterServiceBaseUrl());
@@ -259,6 +287,15 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
         return String.format("http://localhost:%s", clusterPort);
     }
 
+    private URL getInstancesUrl() {
+        String urlStr = getClusterServiceBaseUrl() + "/instances";
+        try {
+            return new URL(urlStr);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Failed to use configuration url: " + urlStr, e);
+        }
+    }
+
     private URL getConfigBaseUrl() {
         String urlStr = getClusterServiceBaseUrl() + "/config";
         try {
@@ -291,9 +328,9 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
         }
     }
 
-    private URL getResourceInfoUrl(String operatorType, String portType) {
+    private URL getResourceInfoUrl(String operatorType, String portType, String resourceName) {
 
-        String subPath = String.format("/consumes/resource/%s/%s", encode(operatorType), encode(portType));
+        String subPath = String.format("/consumes/resource/%s/%s/%s", encode(operatorType), encode(portType), encode(resourceName));
         String urlStr = getConfigBaseUrl() + subPath;
         try {
             return new URL(urlStr);
