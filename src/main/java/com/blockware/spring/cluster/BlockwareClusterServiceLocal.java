@@ -41,6 +41,8 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
 
     private static final String BLOCKWARE_CLUSTER_SERVICE_DEFAULT_PORT = "35100";
 
+    private static final String BLOCKWARE_CLUSTER_SERVICE_DEFAULT_HOST = "127.0.0.1";
+
     private static final String SERVER_PORT = "server.port";
 
     private static final String SERVER_PORT_TYPE = "rest";
@@ -50,6 +52,8 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
     private static final String DOCUMENT = "document";
 
     private static final String CONFIG_CLUSTER_PORT = "cluster.port";
+
+    private static final String CONFIG_CLUSTER_HOST = "cluster.host";
 
     private int serverPort;
 
@@ -75,7 +79,7 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
 
         try {
             serverPort = Integer.valueOf(sendGET(serverPortUrl));
-            log.info("Got server port {} from config service: {}", serverPort, serverPortUrl);
+            log.info("Got server port {} from config service: {}", serverPort, serverPortUrl);
         } catch (IOException e) {
             throw new RuntimeException("Failed to request server port for service: " + blockRef, e);
         }
@@ -284,7 +288,9 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
 
         String clusterPort = clusterConfig.getProperty(CONFIG_CLUSTER_PORT, BLOCKWARE_CLUSTER_SERVICE_DEFAULT_PORT);
 
-        return String.format("http://localhost:%s", clusterPort);
+        String clusterHost = clusterConfig.getProperty(CONFIG_CLUSTER_HOST, BLOCKWARE_CLUSTER_SERVICE_DEFAULT_HOST);
+
+        return String.format("http://%s:%s", clusterHost, clusterPort);
     }
 
     private URL getInstancesUrl() {
