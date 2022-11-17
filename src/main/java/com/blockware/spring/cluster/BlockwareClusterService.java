@@ -109,7 +109,7 @@ abstract public class BlockwareClusterService extends PropertySource<Object> {
      * Gets resource information for a given resource type. This is used for getting non-block
      * dependency information such as databases, MQ's and more.
      *
-     * E.g.: getResourceInfo("sqldb.blockware.com/v1/postgresql" , "postgres");
+     * E.g.: getResourceInfo("blockware/resource-type-postgresql" , "postgres");
      *
      * @param resourceType
      * @param portType
