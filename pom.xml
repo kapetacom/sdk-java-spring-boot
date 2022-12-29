@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.blockware.spring-boot</groupId>
+    <groupId>blockware</groupId>
     <artifactId>spring-boot</artifactId>
     <packaging>jar</packaging>
     <version>0.0.6</version>
@@ -19,11 +19,33 @@
 
     <distributionManagement>
         <repository>
-            <id>blockware</id>
-            <name>blockware</name>
-            <url>https://api.bintray.com/maven/blockware/maven/sdk-java-spring-boot/;publish=1</url>
+            <id>artifact-registry</id>
+            <url>artifactregistry://europe-maven.pkg.dev/blockware-cloud/blockware-maven-public</url>
         </repository>
     </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>artifact-registry</id>
+            <url>artifactregistry://europe-maven.pkg.dev/blockware-cloud/blockware-maven-public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <build>
+        <extensions>
+            <extension>
+                <groupId>com.google.cloud.artifactregistry</groupId>
+                <artifactId>artifactregistry-maven-wagon</artifactId>
+                <version>2.1.0</version>
+            </extension>
+        </extensions>
+    </build>
 
     <scm>
         <url>https://github.com/blockwarecom/sdk-java-spring-boot#readme</url>
@@ -39,7 +61,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
+        <java.version>19</java.version>
         <resource.delimiter>@</resource.delimiter>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
