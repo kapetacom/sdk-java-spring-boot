@@ -137,15 +137,10 @@ public class BlockwareClusterServiceInitializer implements ApplicationListener<A
 
         String blockDir = getBlockDir(environment);
 
-        String blockYMLPath = Paths.get(blockDir, "block.yml").toString();
+        String blockYMLPath = Paths.get(blockDir, "blockware.yml").toString();
 
         if (!new File(blockYMLPath).exists()) {
-            //Try again with .yaml
-            blockYMLPath = Paths.get(blockDir, "block.yaml").toString();
-        }
-
-        if (!new File(blockYMLPath).exists()) {
-            throw new RuntimeException("block.yml or block.yaml file not found in path: " + blockDir + ". Ensure that your current working directory contains the block.yml file.");
+            throw new RuntimeException("blockware.yml file not found in path: " + blockDir + ". Ensure that your current working directory contains the blockware.yml file.");
         }
 
         return blockYMLPath;
