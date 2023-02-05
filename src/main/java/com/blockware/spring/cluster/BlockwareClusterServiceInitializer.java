@@ -1,6 +1,5 @@
 package com.blockware.spring.cluster;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationPreparedEvent;
@@ -10,16 +9,21 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.util.StringUtils;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Handles initialization of the blockware cluster service.
- *
+ * <p>
  * Needs to happen very early in the boot process which is why it is implemented as an application listener
- *
+ * <p>
  * It's for the same reason we've implemented the BlockwareApplication.run method.
  */
 public class BlockwareClusterServiceInitializer implements ApplicationListener<ApplicationPreparedEvent> {
@@ -59,6 +63,9 @@ public class BlockwareClusterServiceInitializer implements ApplicationListener<A
 
         final ConfigurableEnvironment environment = applicationContext.getEnvironment();
 
+        String blockYMLPath = getBlockYMLPath(environment);
+        String blockRefLocal = getBlockRef(blockYMLPath);
+
         final String serviceName = getSystemConfiguration(environment,
                 BLOCKWARE_APPLICATION_NAME,
                 CONFIG_SPRING_APPLICATION_NAME,
@@ -72,7 +79,7 @@ public class BlockwareClusterServiceInitializer implements ApplicationListener<A
         final String blockRef = getSystemConfiguration(environment,
                 BLOCKWARE_BLOCK_REF,
                 CONFIG_BLOCKWARE_BLOCK_REF,
-                "file://" + getBlockYMLPath(environment));
+                blockRefLocal);
 
         final String systemId = getSystemConfiguration(environment,
                 BLOCKWARE_SYSTEM_ID,
@@ -127,9 +134,21 @@ public class BlockwareClusterServiceInitializer implements ApplicationListener<A
         }
     }
 
+    private static String getBlockRef(String blockYMLPath) {
+        try {
+            Yaml yaml = new Yaml();
+            Map<String, Map<String, String>> blockDefinition = yaml.load(Files.newInputStream(Path.of(blockYMLPath)));
+            String name = blockDefinition.getOrDefault("metadata", new HashMap<>()).getOrDefault("name", "");
+
+            return name + ":local";
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read blockware.yml file", e);
+        }
+    }
+
     private String getBlockDir(final ConfigurableEnvironment environment) {
         return environment.getProperty(BLOCKWARE_BASE_DIR,
-            Paths.get(".").toAbsolutePath().normalize().toString()
+                Paths.get(".").toAbsolutePath().normalize().toString()
         );
     }
 
