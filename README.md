@@ -1,1 +1,1 @@
-# Blockware Spring Boot SDK
+# Kapeta Spring Boot SDK

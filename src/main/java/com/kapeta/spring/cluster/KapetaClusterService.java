@@ -1,4 +1,4 @@
-package com.blockware.spring.cluster;
+package com.kapeta.spring.cluster;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -9,7 +9,6 @@ import org.springframework.core.env.PropertySource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -25,21 +24,21 @@ import java.util.Set;
  * specific to the environment and each have different expectations based on that environment.
  *
  * Common for all of them is that this is the central class for getting information
- * about the blockware system in which this service is running.
+ * about the kapeta system in which this service is running.
  *
  * What is different is how that information is retrieved.
  *
  */
-abstract public class BlockwareClusterService extends PropertySource<Object> {
-    private static final Logger log = LoggerFactory.getLogger(BlockwareClusterService.class);
+abstract public class KapetaClusterService extends PropertySource<Object> {
+    private static final Logger log = LoggerFactory.getLogger(KapetaClusterService.class);
 
-    public static final String HEADER_BLOCKWARE_BLOCK = "X-Blockware-Block";
+    public static final String HEADER_KAPETA_BLOCK = "X-Kapeta-Block";
 
-    public static final String HEADER_BLOCKWARE_SYSTEM = "X-Blockware-System";
+    public static final String HEADER_KAPETA_SYSTEM = "X-Kapeta-System";
 
-    public static final String HEADER_BLOCKWARE_INSTANCE = "X-Blockware-Instance";
+    public static final String HEADER_KAPETA_INSTANCE = "X-Kapeta-Instance";
 
-    public static final String BLOCKWARE_CONFIG_NAME = "BLOCKWARE_CONFIG";
+    public static final String KAPETA_CONFIG_NAME = "KAPETA_CONFIG";
 
     protected final String blockRef;
 
@@ -53,8 +52,8 @@ abstract public class BlockwareClusterService extends PropertySource<Object> {
 
     private boolean initialized;
     
-    public BlockwareClusterService(String blockRef, String systemId, String instanceId, Environment environment) {
-        super(BLOCKWARE_CONFIG_NAME);
+    public KapetaClusterService(String blockRef, String systemId, String instanceId, Environment environment) {
+        super(KAPETA_CONFIG_NAME);
         this.environment = environment;
         this.blockRef = blockRef;
         this.systemId = systemId;
@@ -109,7 +108,7 @@ abstract public class BlockwareClusterService extends PropertySource<Object> {
      * Gets resource information for a given resource type. This is used for getting non-block
      * dependency information such as databases, MQ's and more.
      *
-     * E.g.: getResourceInfo("blockware/resource-type-postgresql" , "postgres");
+     * E.g.: getResourceInfo("kapeta/resource-type-postgresql" , "postgres");
      *
      * @param resourceType
      * @param portType
@@ -175,9 +174,9 @@ abstract public class BlockwareClusterService extends PropertySource<Object> {
         }
 
         connection.setRequestMethod(method);
-        connection.addRequestProperty(HEADER_BLOCKWARE_BLOCK, blockRef);
-        connection.addRequestProperty(HEADER_BLOCKWARE_SYSTEM, systemId);
-        connection.addRequestProperty(HEADER_BLOCKWARE_INSTANCE, instanceId);
+        connection.addRequestProperty(HEADER_KAPETA_BLOCK, blockRef);
+        connection.addRequestProperty(HEADER_KAPETA_SYSTEM, systemId);
+        connection.addRequestProperty(HEADER_KAPETA_INSTANCE, instanceId);
 
         if (body != null) {
             IOUtils.copy(body, connection.getOutputStream());
@@ -187,7 +186,7 @@ abstract public class BlockwareClusterService extends PropertySource<Object> {
     }
 
     protected String getPropertyValue(String key, String defaultValue) {
-        return BlockwareClusterServiceInitializer.getSystemConfiguration(environment, key, key.toUpperCase(), defaultValue);
+        return KapetaClusterServiceInitializer.getSystemConfiguration(environment, key, key.toUpperCase(), defaultValue);
     }
 
     private void applyConfigurationFromConfigService(Properties properties) throws Exception {
@@ -200,7 +199,7 @@ abstract public class BlockwareClusterService extends PropertySource<Object> {
         }
 
         int envVars = applyOverridesFromEnvironment();
-        log.trace("Read {} 'BLOCKWARE_<section>_<key>=<value>' environment variables (overwrites values from files)", envVars);
+        log.trace("Read {} 'KAPETA_<section>_<key>=<value>' environment variables (overwrites values from files)", envVars);
     }
 
     private int applyOverridesFromEnvironment() {
@@ -214,8 +213,8 @@ abstract public class BlockwareClusterService extends PropertySource<Object> {
         Set<String> envKeys = env.keySet();
         if (envKeys.size() > 0) {
             for (String envKey : envKeys) {
-                if (envKey.startsWith("BLOCKWARE_")) {
-                    // Format: BLOCKWARE_<section>_<key> = <value>
+                if (envKey.startsWith("KAPETA_")) {
+                    // Format: KAPETA_<section>_<key> = <value>
 
                     String envKeyWithoutPrefix = envKey.substring(5).toLowerCase();
                     if (envKeyWithoutPrefix.indexOf("_") == -1) {

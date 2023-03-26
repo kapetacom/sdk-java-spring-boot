@@ -1,4 +1,4 @@
-package com.blockware.spring.cluster;
+package com.kapeta.spring.cluster;
 
 import java.io.IOException;
 

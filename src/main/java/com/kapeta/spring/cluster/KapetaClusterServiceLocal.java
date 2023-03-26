@@ -1,4 +1,4 @@
-package com.blockware.spring.cluster;
+package com.kapeta.spring.cluster;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ import java.util.Properties;
 /**
  * Cluster service used in local (desktop) environments.
  *
- * Expects the blockware cluster service server application to be running (See blockctl)
+ * Expects the kapeta cluster service server application to be running (See blockctl)
  *
  * What's special about the local service is that we do not control the environment
  * so everything is being done "on-demand" from starting up databases to connecting routes.
@@ -30,18 +30,18 @@ import java.util.Properties;
  * This is to ensure a simple integration with existing toolchains such as running services
  * from in an IDE or from the command line.
  *
- * We want to avoid any configuration needs (including env vars) from installing blockware locally to
+ * We want to avoid any configuration needs (including env vars) from installing kapeta locally to
  * running your services.
  */
-class BlockwareClusterServiceLocal extends BlockwareClusterService {
+class KapetaClusterServiceLocal extends KapetaClusterService {
 
-    private static final Logger log = LoggerFactory.getLogger(BlockwareClusterServiceLocal.class);
+    private static final Logger log = LoggerFactory.getLogger(KapetaClusterServiceLocal.class);
 
-    private static final String BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE = ".blockware/cluster-service.yml";
+    private static final String KAPETA_CLUSTER_SERVICE_CONFIG_FILE = ".kapeta/cluster-service.yml";
 
-    private static final String BLOCKWARE_CLUSTER_SERVICE_DEFAULT_PORT = "35100";
+    private static final String KAPETA_CLUSTER_SERVICE_DEFAULT_PORT = "35100";
 
-    private static final String BLOCKWARE_CLUSTER_SERVICE_DEFAULT_HOST = "127.0.0.1";
+    private static final String KAPETA_CLUSTER_SERVICE_DEFAULT_HOST = "127.0.0.1";
 
     private static final String SERVER_PORT = "server.port";
 
@@ -61,7 +61,7 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    BlockwareClusterServiceLocal(String blockRef, String systemId, String instanceId, Environment environment) {
+    KapetaClusterServiceLocal(String blockRef, String systemId, String instanceId, Environment environment) {
         super(blockRef, systemId, instanceId, environment);
     }
 
@@ -157,7 +157,7 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
 
         final String userHomeDir = System.getProperty(PROPERTY_USER_HOME);
 
-        final File configFile = new File(userHomeDir + File.separator + BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE);
+        final File configFile = new File(userHomeDir + File.separator + KAPETA_CLUSTER_SERVICE_CONFIG_FILE);
 
         clusterConfig = new Properties();
 
@@ -286,9 +286,9 @@ class BlockwareClusterServiceLocal extends BlockwareClusterService {
 
         final Properties clusterConfig = getClusterConfig();
 
-        String clusterPort = clusterConfig.getProperty(CONFIG_CLUSTER_PORT, BLOCKWARE_CLUSTER_SERVICE_DEFAULT_PORT);
+        String clusterPort = clusterConfig.getProperty(CONFIG_CLUSTER_PORT, KAPETA_CLUSTER_SERVICE_DEFAULT_PORT);
 
-        String clusterHost = clusterConfig.getProperty(CONFIG_CLUSTER_HOST, BLOCKWARE_CLUSTER_SERVICE_DEFAULT_HOST);
+        String clusterHost = clusterConfig.getProperty(CONFIG_CLUSTER_HOST, KAPETA_CLUSTER_SERVICE_DEFAULT_HOST);
 
         return String.format("http://%s:%s", clusterHost, clusterPort);
     }

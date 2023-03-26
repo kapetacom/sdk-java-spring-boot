@@ -1,9 +1,9 @@
-package com.blockware.spring;
+package com.kapeta.spring;
 
-import com.blockware.spring.cluster.BlockwareClusterServiceInitializer;
+import com.kapeta.spring.cluster.KapetaClusterServiceInitializer;
 import org.springframework.boot.SpringApplication;
 
-public class BlockwareApplication {
+public class KapetaApplication {
 
     /**
      * Use this to start your Spring application - a complete replacement for SpringApplication.run
@@ -14,7 +14,7 @@ public class BlockwareApplication {
      */
     public static void run(Class<?> mainClass, String[] args) {
         final SpringApplication application = new SpringApplication(mainClass);
-        application.addListeners(new BlockwareClusterServiceInitializer());
+        application.addListeners(new KapetaClusterServiceInitializer());
         application.run(args);
     }
 }

@@ -1,4 +1,4 @@
-package com.blockware.spring.cluster;
+package com.kapeta.spring.cluster;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,8 +9,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Controller
-@RequestMapping("__blockware")
-public class BlockwareController {
+@RequestMapping("__kapeta")
+public class KapetaController {
 
     @Autowired
     private ObjectMapper objectMapper;

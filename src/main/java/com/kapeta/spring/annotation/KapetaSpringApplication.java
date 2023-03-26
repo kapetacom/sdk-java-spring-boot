@@ -1,4 +1,4 @@
-package com.blockware.spring.annotation;
+package com.kapeta.spring.annotation;
 
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -33,7 +33,7 @@ import java.lang.annotation.*;
 @ComponentScan(excludeFilters = {
         @ComponentScan.Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class)
 })
-@BlockwareEnableDefaultConfig
-public @interface BlockwareSpringApplication {
+@KapetaEnableDefaultConfig
+public @interface KapetaSpringApplication {
 
 }

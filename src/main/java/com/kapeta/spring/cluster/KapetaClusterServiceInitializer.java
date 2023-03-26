@@ -1,4 +1,4 @@
-package com.blockware.spring.cluster;
+package com.kapeta.spring.cluster;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,34 +20,34 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Handles initialization of the blockware cluster service.
+ * Handles initialization of the kapeta cluster service.
  * <p>
  * Needs to happen very early in the boot process which is why it is implemented as an application listener
  * <p>
- * It's for the same reason we've implemented the BlockwareApplication.run method.
+ * It's for the same reason we've implemented the KapetaApplication.run method.
  */
-public class BlockwareClusterServiceInitializer implements ApplicationListener<ApplicationPreparedEvent> {
+public class KapetaClusterServiceInitializer implements ApplicationListener<ApplicationPreparedEvent> {
 
-    private static final Logger log = LoggerFactory.getLogger(BlockwareClusterServiceInitializer.class);
+    private static final Logger log = LoggerFactory.getLogger(KapetaClusterServiceInitializer.class);
 
-    public static final String BLOCKWARE_APPLICATION_NAME = "BLOCKWARE_APPLICATION_NAME";
+    public static final String KAPETA_APPLICATION_NAME = "KAPETA_APPLICATION_NAME";
 
-    public static final String BLOCKWARE_SYSTEM_TYPE = "BLOCKWARE_SYSTEM_TYPE";
+    public static final String KAPETA_SYSTEM_TYPE = "KAPETA_SYSTEM_TYPE";
 
-    public static final String BLOCKWARE_SYSTEM_ID = "BLOCKWARE_SYSTEM_ID";
+    public static final String KAPETA_SYSTEM_ID = "KAPETA_SYSTEM_ID";
 
-    public static final String BLOCKWARE_BLOCK_REF = "BLOCKWARE_BLOCK_REF";
+    public static final String KAPETA_BLOCK_REF = "KAPETA_BLOCK_REF";
 
-    public static final String BLOCKWARE_INSTANCE_ID = "BLOCKWARE_INSTANCE_ID";
+    public static final String KAPETA_INSTANCE_ID = "KAPETA_INSTANCE_ID";
 
-    public static final String BLOCKWARE_BASE_DIR = "BLOCKWARE_BASE_DIR";
+    public static final String KAPETA_BASE_DIR = "KAPETA_BASE_DIR";
 
 
     public static final String CONFIG_SPRING_APPLICATION_NAME = "spring.application.name";
-    public static final String CONFIG_BLOCKWARE_SYSTEM_TYPE = "blockware.system.type";
-    public static final String CONFIG_BLOCKWARE_SYSTEM_ID = "blockware.system.id";
-    public static final String CONFIG_BLOCKWARE_BLOCK_REF = "blockware.block.ref";
-    public static final String CONFIG_BLOCKWARE_INSTANCE_ID = "blockware.instance.id";
+    public static final String CONFIG_KAPETA_SYSTEM_TYPE = "kapeta.system.type";
+    public static final String CONFIG_KAPETA_SYSTEM_ID = "kapeta.system.id";
+    public static final String CONFIG_KAPETA_BLOCK_REF = "kapeta.block.ref";
+    public static final String CONFIG_KAPETA_INSTANCE_ID = "kapeta.instance.id";
 
 
     public static final String DEFAULT_APPLICATION_NAME = "unknown-application";
@@ -55,7 +55,7 @@ public class BlockwareClusterServiceInitializer implements ApplicationListener<A
     public static final String DEFAULT_SYSTEM_ID = "";
     public static final String DEFAULT_INSTANCE_ID = "";
 
-    public static final String HEALTH_CHECK_ENDPOINT = "/__blockware/health";
+    public static final String HEALTH_CHECK_ENDPOINT = "/__kapeta/health";
 
     @Override
     public void onApplicationEvent(ApplicationPreparedEvent event) {
@@ -67,33 +67,33 @@ public class BlockwareClusterServiceInitializer implements ApplicationListener<A
         String blockRefLocal = getBlockRef(blockYMLPath);
 
         final String serviceName = getSystemConfiguration(environment,
-                BLOCKWARE_APPLICATION_NAME,
+                KAPETA_APPLICATION_NAME,
                 CONFIG_SPRING_APPLICATION_NAME,
                 DEFAULT_APPLICATION_NAME);
 
         final String systemType = getSystemConfiguration(environment,
-                BLOCKWARE_SYSTEM_TYPE,
-                CONFIG_BLOCKWARE_SYSTEM_TYPE,
+                KAPETA_SYSTEM_TYPE,
+                CONFIG_KAPETA_SYSTEM_TYPE,
                 DEFAULT_SYSTEM_TYPE).toLowerCase();
 
         final String blockRef = getSystemConfiguration(environment,
-                BLOCKWARE_BLOCK_REF,
-                CONFIG_BLOCKWARE_BLOCK_REF,
+                KAPETA_BLOCK_REF,
+                CONFIG_KAPETA_BLOCK_REF,
                 blockRefLocal);
 
         final String systemId = getSystemConfiguration(environment,
-                BLOCKWARE_SYSTEM_ID,
-                CONFIG_BLOCKWARE_SYSTEM_ID,
+                KAPETA_SYSTEM_ID,
+                CONFIG_KAPETA_SYSTEM_ID,
                 DEFAULT_SYSTEM_ID);
 
         final String instanceId = getSystemConfiguration(environment,
-                BLOCKWARE_INSTANCE_ID,
-                CONFIG_BLOCKWARE_INSTANCE_ID,
+                KAPETA_INSTANCE_ID,
+                CONFIG_KAPETA_INSTANCE_ID,
                 DEFAULT_INSTANCE_ID);
 
         log.info("Starting block instance for block: '{}'", blockRef);
 
-        BlockwareClusterService configSource = null;
+        KapetaClusterService configSource = null;
         switch (systemType) {
             case "staging":
             case "sandbox":
@@ -105,7 +105,7 @@ public class BlockwareClusterServiceInitializer implements ApplicationListener<A
             case "development":
             case "dev":
             case "local":
-                configSource = new BlockwareClusterServiceLocal(blockRef, systemId, instanceId, environment);
+                configSource = new KapetaClusterServiceLocal(blockRef, systemId, instanceId, environment);
                 break;
 
             default:
@@ -123,14 +123,14 @@ public class BlockwareClusterServiceInitializer implements ApplicationListener<A
             MutablePropertySources propertySources = environment.getPropertySources();
             propertySources.addFirst(configSource);
 
-            applicationContext.getBeanFactory().registerResolvableDependency(BlockwareClusterService.class, configSource);
+            applicationContext.getBeanFactory().registerResolvableDependency(KapetaClusterService.class, configSource);
 
-            log.info("Blockware service initialised with cluster service '{}' for environment '{}' in system '{}'", configSource.getSourceId(), systemType, configSource.getSystemId());
+            log.info("Kapeta service initialised with cluster service '{}' for environment '{}' in system '{}'", configSource.getSourceId(), systemType, configSource.getSystemId());
         } catch (ClusterServiceUnavailableException e) {
             log.error(e.getMessage());
             System.exit(1); //Do a hard exit here - we need to cluster service to be available to continue
         } catch (Exception e) {
-            throw new RuntimeException("Failed to initialise blockware config source for environment: " + systemType + " in system " + systemId, e);
+            throw new RuntimeException("Failed to initialise kapeta config source for environment: " + systemType + " in system " + systemId, e);
         }
     }
 
@@ -142,12 +142,12 @@ public class BlockwareClusterServiceInitializer implements ApplicationListener<A
 
             return name + ":local";
         } catch (IOException e) {
-            throw new RuntimeException("Failed to read blockware.yml file", e);
+            throw new RuntimeException("Failed to read kapeta.yml file", e);
         }
     }
 
     private String getBlockDir(final ConfigurableEnvironment environment) {
-        return environment.getProperty(BLOCKWARE_BASE_DIR,
+        return environment.getProperty(KAPETA_BASE_DIR,
                 Paths.get(".").toAbsolutePath().normalize().toString()
         );
     }
@@ -156,10 +156,10 @@ public class BlockwareClusterServiceInitializer implements ApplicationListener<A
 
         String blockDir = getBlockDir(environment);
 
-        String blockYMLPath = Paths.get(blockDir, "blockware.yml").toString();
+        String blockYMLPath = Paths.get(blockDir, "kapeta.yml").toString();
 
         if (!new File(blockYMLPath).exists()) {
-            throw new RuntimeException("blockware.yml file not found in path: " + blockDir + ". Ensure that your current working directory contains the blockware.yml file.");
+            throw new RuntimeException("kapeta.yml file not found in path: " + blockDir + ". Ensure that your current working directory contains the kapeta.yml file.");
         }
 
         return blockYMLPath;

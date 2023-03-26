@@ -1,4 +1,4 @@
-package com.blockware.spring.cluster;
+package com.kapeta.spring.cluster;
 
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 /**
- * Default configuration for blockware
+ * Default configuration for kapeta
  */
-public class BlockwareDefaultConfig {
+public class KapetaDefaultConfig {
 
 
     /**
@@ -35,7 +35,7 @@ public class BlockwareDefaultConfig {
     }
 
     @Bean
-    public BlockwareController blockwareController() {
-        return new BlockwareController();
+    public KapetaController kapetaController() {
+        return new KapetaController();
     }
 }
