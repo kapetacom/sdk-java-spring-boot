@@ -74,8 +74,8 @@
     </build>
 
     <scm>
-        <url>https://github.com/blockwarecom/sdk-java-spring-boot#readme</url>
-        <connection>git+https://github.com/blockwarecom/sdk-java-spring-boot.git</connection>
+        <url>https://github.com/kapetacom/sdk-java-spring-boot#readme</url>
+        <connection>git+https://github.com/kapetacom/sdk-java-spring-boot.git</connection>
     </scm>
 
     <parent>
