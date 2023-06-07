@@ -9,6 +9,10 @@
     <packaging>jar</packaging>
     <version>0.0.12</version>
 
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Kapeta Spring Boot SDK</description>
+    <url>https://kapeta.com</url>
+
     <licenses>
         <license>
             <name>MIT License</name>
@@ -16,6 +20,20 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
+    <developers>
+        <developer>
+            <name>Kapeta Engineering</name>
+            <email>engineering@kapeta.com</email>
+            <organization>Kapeta</organization>
+            <organizationUrl>https://kapeta.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/kapetacom/sdk-java-spring-boot#readme</url>
+        <connection>git+https://github.com/kapetacom/sdk-java-spring-boot.git</connection>
+    </scm>
 
     <distributionManagement>
         <repository>
@@ -72,11 +90,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <scm>
-        <url>https://github.com/kapetacom/sdk-java-spring-boot#readme</url>
-        <connection>git+https://github.com/kapetacom/sdk-java-spring-boot.git</connection>
-    </scm>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
