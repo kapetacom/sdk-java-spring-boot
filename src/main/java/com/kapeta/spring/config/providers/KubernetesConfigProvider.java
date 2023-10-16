@@ -123,7 +123,8 @@ public class KubernetesConfigProvider implements KapetaConfigurationProvider {
 
     @Override
     public String getInstanceProviderUrl(String instanceId, String portType, String resourceName) {
-        return null;
+        //TODO: Implement this (KAP-764)
+        throw new RuntimeException("Method not implemented.");
     }
 
     @Override
