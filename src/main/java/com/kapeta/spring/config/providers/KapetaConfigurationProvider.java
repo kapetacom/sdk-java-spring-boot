@@ -8,53 +8,60 @@ import java.util.Map;
 public interface KapetaConfigurationProvider {
     String DEFAULT_SERVER_PORT_TYPE = "rest";
 
+    /**
+     * Gets the server port for this service
+     */
     default int getServerPort() {
         return getServerPort(DEFAULT_SERVER_PORT_TYPE);
     }
 
     /**
-     * Gets the primary server port for this service
+     * Gets the server port for this service and port type
      */
     int getServerPort(String portType);
 
+    /**
+     * Gets the address where this service should bind to
+     */
     String getServerHost();
 
+    /**
+     * Get the system ID which is the same as the plan reference
+     */
     String getSystemId();
 
+    /**
+     * Get the spring environment used for this config provider
+     */
     Environment getEnvironment();
 
     /**
      * Gets the remote address for a given service name and port type.
-     *
+     * <p>
      * E.g.: getServiceAddress("users" , "rest");
-     *
-     * @param serviceName
-     * @param portType
-     * @return
      */
     String getServiceAddress(String serviceName, String portType);
 
     /**
      * Gets resource information for a given resource type. This is used for getting non-block
      * dependency information such as databases, MQ's and more.
-     *
-     * E.g.: getResourceInfo("kapeta/resource-type-postgresql" , "postgres");
-     *
-     * @param resourceType
-     * @param portType
-     * @return
+     * <p>
+     * E.g.: getResourceInfo("kapeta/resource-type-postgresql" , "postgres", "mydb");
      */
     ResourceInfo getResourceInfo(String resourceType, String portType, String name);
 
+    /**
+     * Gets the host name for a given instance ID
+     */
     String getInstanceHost(String instanceId);
 
-    String getInstanceProviderUrl(String instanceId, String portType, String resourceName);
-
+    /**
+     * Gets the configuration for the current instance
+     */
     Map<String,Object> getInstanceConfig() throws Exception;
 
     /**
      * Get unique source ID for this configuration source
-     * @return
      */
     String getProviderId();
 
@@ -64,7 +71,6 @@ public interface KapetaConfigurationProvider {
         private String pid;
 
         private String health;
-
 
         public InstanceInfo(String pid, String health) {
             this.pid = pid;

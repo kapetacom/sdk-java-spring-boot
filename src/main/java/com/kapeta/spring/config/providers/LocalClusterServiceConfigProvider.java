@@ -23,7 +23,7 @@ import static com.kapeta.spring.config.ConfigUtils.getPropertiesFromYAML;
 /**
  * Cluster service used in local (desktop) environments.
  * <p>
- * Expects the kapeta cluster service server application to be running (See blockctl)
+ * Expects the kapeta cluster service server application to be running
  * <p>
  * What's special about the local service is that we do not control the environment
  * so everything is being done "on-demand" from starting up databases to connecting routes.
@@ -146,17 +146,6 @@ public class LocalClusterServiceConfigProvider implements KapetaConfigurationPro
         }
     }
 
-    @Override
-    public String getInstanceProviderUrl(String instanceId, String portType, String resourceName) {
-        var url = this.getInstanceProviderHostUrl(instanceId, portType, resourceName);
-        try {
-            return httpClient.sendGET(url);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to get instance provider url", e);
-        }
-    }
-
-
     public void onInstanceStarted(String instanceHealthPath) {
         final String instancesUrl = getInstanceUrl();
 
@@ -203,22 +192,6 @@ public class LocalClusterServiceConfigProvider implements KapetaConfigurationPro
         return this.getClusterServiceBaseUrl() + subPath;
     }
 
-    private String getInstanceProviderHostUrl(String instanceId, String portType, String resourceName) {
-        var subPath = Stream.of(
-                        httpClient.getSystemId(),
-                        instanceId,
-                        "provider",
-                        portType,
-                        resourceName,
-                        "address",
-                        "public"
-                )
-                .map(LocalClusterServiceConfigProvider::encode)
-                .collect(Collectors.joining("/"));
-
-
-        return this.getInstanceUrl() + '/' + subPath;
-    }
 
     private String getInstanceHostUrl(String instanceId) {
         var subPath = Stream.of(

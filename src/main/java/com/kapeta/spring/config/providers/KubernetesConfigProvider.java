@@ -12,8 +12,8 @@ import java.util.Map;
 
 
 /**
- * Configuration for remotely running blocks
- *
+ * Configuration for remotely running blocks (In Kubernetes)
+ * <p>
  * Will read configuration from the ENV vars
  */
 public class KubernetesConfigProvider implements KapetaConfigurationProvider {
@@ -119,12 +119,6 @@ public class KubernetesConfigProvider implements KapetaConfigurationProvider {
         }
 
         throw new IllegalStateException("Unknown instance id when resolving host: %s".formatted(instanceId));
-    }
-
-    @Override
-    public String getInstanceProviderUrl(String instanceId, String portType, String resourceName) {
-        //TODO: Implement this (KAP-764)
-        throw new RuntimeException("Method not implemented.");
     }
 
     @Override
