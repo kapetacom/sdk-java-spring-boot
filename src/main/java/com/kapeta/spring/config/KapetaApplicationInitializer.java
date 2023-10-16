@@ -1,5 +1,8 @@
-package com.kapeta.spring.cluster;
+package com.kapeta.spring.config;
 
+import com.kapeta.spring.config.providers.KapetaConfigurationProvider;
+import com.kapeta.spring.config.providers.KubernetesConfigProvider;
+import com.kapeta.spring.config.providers.LocalClusterServiceConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationPreparedEvent;
@@ -26,11 +29,9 @@ import java.util.Map;
  * <p>
  * It's for the same reason we've implemented the KapetaApplication.run method.
  */
-public class KapetaClusterServiceInitializer implements ApplicationListener<ApplicationPreparedEvent> {
+public class KapetaApplicationInitializer implements ApplicationListener<ApplicationPreparedEvent> {
 
-    private static final Logger log = LoggerFactory.getLogger(KapetaClusterServiceInitializer.class);
-
-    public static final String KAPETA_APPLICATION_NAME = "KAPETA_APPLICATION_NAME";
+    private static final Logger log = LoggerFactory.getLogger(KapetaApplicationInitializer.class);
 
     public static final String KAPETA_SYSTEM_TYPE = "KAPETA_SYSTEM_TYPE";
 
@@ -42,15 +43,11 @@ public class KapetaClusterServiceInitializer implements ApplicationListener<Appl
 
     public static final String KAPETA_BASE_DIR = "KAPETA_BASE_DIR";
 
-
-    public static final String CONFIG_SPRING_APPLICATION_NAME = "spring.application.name";
     public static final String CONFIG_KAPETA_SYSTEM_TYPE = "kapeta.system.type";
     public static final String CONFIG_KAPETA_SYSTEM_ID = "kapeta.system.id";
     public static final String CONFIG_KAPETA_BLOCK_REF = "kapeta.block.ref";
     public static final String CONFIG_KAPETA_INSTANCE_ID = "kapeta.instance.id";
 
-
-    public static final String DEFAULT_APPLICATION_NAME = "unknown-application";
     public static final String DEFAULT_SYSTEM_TYPE = "development";
     public static final String DEFAULT_SYSTEM_ID = "";
     public static final String DEFAULT_INSTANCE_ID = "";
@@ -65,11 +62,6 @@ public class KapetaClusterServiceInitializer implements ApplicationListener<Appl
 
         String blockYMLPath = getBlockYMLPath(environment);
         String blockRefLocal = getBlockRef(blockYMLPath);
-
-        final String serviceName = getSystemConfiguration(environment,
-                KAPETA_APPLICATION_NAME,
-                CONFIG_SPRING_APPLICATION_NAME,
-                DEFAULT_APPLICATION_NAME);
 
         final String systemType = getSystemConfiguration(environment,
                 KAPETA_SYSTEM_TYPE,
@@ -93,39 +85,31 @@ public class KapetaClusterServiceInitializer implements ApplicationListener<Appl
 
         log.info("Starting block instance for block: '{}'", blockRef);
 
-        KapetaClusterService configSource = null;
-        switch (systemType) {
-            case "staging":
-            case "sandbox":
-
-            case "production":
-            case "prod":
-                throw new RuntimeException("Unimplemented environment support: " + systemType);
-
-            case "development":
-            case "dev":
-            case "local":
-                configSource = new KapetaClusterServiceLocal(blockRef, systemId, instanceId, environment);
-                break;
-
-            default:
-                throw new RuntimeException("Unknown environment: " + systemType);
-
-        }
 
         try {
-            configSource.load();
 
-            //Tell the cluster service about this instance
-            configSource.registerInstance(HEALTH_CHECK_ENDPOINT);
-            Runtime.getRuntime().addShutdownHook(new Thread(configSource::instanceStopped));
+            KapetaConfigurationProvider configProvider = switch (systemType) {
+                case "k8s", "kubernetes" ->
+                        new KubernetesConfigProvider(systemId, environment);
+                case "development", "dev", "local" -> {
+                    var local = new LocalClusterServiceConfigProvider(blockRef, systemId, instanceId, environment);
+                    //Tell the cluster service about this instance
+                    local.onInstanceStarted(HEALTH_CHECK_ENDPOINT);
+                    Runtime.getRuntime().addShutdownHook(new Thread(local::onInstanceStopped));
+                    yield local;
+                }
 
+                default -> throw new RuntimeException("Unknown environment: " + systemType);
+            };
+
+            var configSource = new PropertiesConfigurationSource(configProvider);
             MutablePropertySources propertySources = environment.getPropertySources();
             propertySources.addFirst(configSource);
 
-            applicationContext.getBeanFactory().registerResolvableDependency(KapetaClusterService.class, configSource);
+            applicationContext.getBeanFactory().registerResolvableDependency(PropertiesConfigurationSource.class, configSource);
+            applicationContext.getBeanFactory().registerResolvableDependency(KapetaConfigurationProvider.class, configProvider);
 
-            log.info("Kapeta service initialised with cluster service '{}' for environment '{}' in system '{}'", configSource.getSourceId(), systemType, configSource.getSystemId());
+            log.info("Kapeta service initialised with configuration source '{}' for environment '{}' in system '{}'", configProvider.getProviderId(), systemType, configProvider.getSystemId());
         } catch (ClusterServiceUnavailableException e) {
             log.error(e.getMessage());
             System.exit(1); //Do a hard exit here - we need to cluster service to be available to continue

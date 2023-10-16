@@ -1,6 +1,6 @@
 package com.kapeta.spring.annotation;
 
-import com.kapeta.spring.cluster.KapetaDefaultConfig;
+import com.kapeta.spring.config.KapetaDefaultConfig;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;

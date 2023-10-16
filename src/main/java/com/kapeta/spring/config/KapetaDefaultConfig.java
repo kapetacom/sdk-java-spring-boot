@@ -1,4 +1,4 @@
-package com.kapeta.spring.cluster;
+package com.kapeta.spring.config;
 
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
