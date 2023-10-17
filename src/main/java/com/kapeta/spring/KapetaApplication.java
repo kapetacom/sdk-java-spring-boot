@@ -1,6 +1,6 @@
 package com.kapeta.spring;
 
-import com.kapeta.spring.cluster.KapetaClusterServiceInitializer;
+import com.kapeta.spring.config.KapetaApplicationInitializer;
 import org.springframework.boot.SpringApplication;
 
 public class KapetaApplication {
@@ -14,7 +14,7 @@ public class KapetaApplication {
      */
     public static void run(Class<?> mainClass, String[] args) {
         final SpringApplication application = new SpringApplication(mainClass);
-        application.addListeners(new KapetaClusterServiceInitializer());
+        application.addListeners(new KapetaApplicationInitializer());
         application.run(args);
     }
 }

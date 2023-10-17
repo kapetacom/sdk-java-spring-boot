@@ -20,15 +20,7 @@ import java.lang.annotation.*;
 @Inherited
 @SpringBootConfiguration
 @EnableAutoConfiguration(
-        //We exclude things where mongodb has explicit configuration
-        exclude = {
-                MongoAutoConfiguration.class,
-                MongoDataAutoConfiguration.class,
-                MongoRepositoriesAutoConfiguration.class,
-                DataSourceAutoConfiguration.class,
-                JdbcTemplateAutoConfiguration.class,
-                JpaRepositoriesAutoConfiguration.class
-        }
+
 )
 @ComponentScan(excludeFilters = {
         @ComponentScan.Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class)
