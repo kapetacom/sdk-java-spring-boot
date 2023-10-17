@@ -11,6 +11,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class SimpleHttpClient {
+    public static final String KAPETA_ENVIRONMENT_TYPE = "KAPETA_ENVIRONMENT_TYPE";
+
+    public static final String HEADER_KAPETA_ENVIRONMENT = "X-Kapeta-Environment";
 
     public static final String HEADER_KAPETA_BLOCK = "X-Kapeta-Block";
 
@@ -93,6 +96,12 @@ public class SimpleHttpClient {
         }
 
         connection.setRequestMethod(method);
+
+        var environment = "process";
+        if (System.getenv().containsKey(KAPETA_ENVIRONMENT_TYPE)) {
+            environment = System.getenv(KAPETA_ENVIRONMENT_TYPE);
+        }
+        connection.addRequestProperty(HEADER_KAPETA_ENVIRONMENT, environment);
         connection.addRequestProperty(HEADER_KAPETA_BLOCK, blockRef);
         connection.addRequestProperty(HEADER_KAPETA_SYSTEM, systemId);
         connection.addRequestProperty(HEADER_KAPETA_INSTANCE, instanceId);
