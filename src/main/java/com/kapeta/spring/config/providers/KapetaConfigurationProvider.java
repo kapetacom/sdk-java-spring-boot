@@ -96,6 +96,8 @@ public interface KapetaConfigurationProvider {
 
         private String protocol;
 
+        private String resource;
+
         private Map<String, Object> options = new HashMap<>();
 
         private Map<String, String> credentials = new HashMap<>();
@@ -148,5 +150,12 @@ public interface KapetaConfigurationProvider {
             this.credentials = credentials;
         }
 
+        public String getResource() {
+            return resource;
+        }
+
+        public void setResource(String resource) {
+            this.resource = resource;
+        }
     }
 }

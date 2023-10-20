@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.kapeta.spring.config.ConfigUtils.getPropertiesFromYAML;
+import static com.kapeta.spring.config.KapetaDefaultConfig.createDefaultObjectMapper;
 
 
 /**
@@ -52,7 +53,7 @@ public class LocalClusterServiceConfigProvider implements KapetaConfigurationPro
 
     private final Environment environment;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = createDefaultObjectMapper();
 
     private final SimpleHttpClient httpClient;
 

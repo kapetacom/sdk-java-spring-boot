@@ -1,5 +1,6 @@
 package com.kapeta.spring.config.providers;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
+import static com.kapeta.spring.config.KapetaDefaultConfig.createDefaultObjectMapper;
+
 
 /**
  * Configuration for remotely running blocks (In Kubernetes)
@@ -19,7 +22,7 @@ import java.util.Map;
 public class KubernetesConfigProvider implements KapetaConfigurationProvider {
     private static final Logger log = LoggerFactory.getLogger(KubernetesConfigProvider.class);
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = createDefaultObjectMapper();
     private final String systemId;
     private final Environment environment;
     private Map<String, String> instanceHosts;
