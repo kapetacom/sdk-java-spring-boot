@@ -1,3 +1,8 @@
+/*
+ * Copyright 2023 Kapeta Inc.
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.kapeta.spring.annotation;
 
 import org.springframework.boot.SpringBootConfiguration;
