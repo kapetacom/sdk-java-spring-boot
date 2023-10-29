@@ -1,3 +1,8 @@
+/*
+ * Copyright 2023 Kapeta Inc.
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.kapeta.spring.config.providers;
 
 import org.springframework.core.env.Environment;
