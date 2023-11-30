@@ -16,6 +16,7 @@ import com.kapeta.spring.rest.OpenAPIRedirectController;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 /**
@@ -44,6 +45,7 @@ public class KapetaDefaultConfig {
     }
 
     @Bean
+    @Primary // todo: correct?
     @ConditionalOnMissingBean(ObjectMapper.class)
     public ObjectMapper objectMapper() {
         return createDefaultObjectMapper();
