@@ -12,9 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.kapeta.spring.rest.OpenAPIRedirectController;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
@@ -45,20 +43,9 @@ public class KapetaDefaultConfig {
     }
 
     @Bean
-    @Primary // todo: correct?
+    @Primary
     @ConditionalOnMissingBean(ObjectMapper.class)
     public ObjectMapper objectMapper() {
         return createDefaultObjectMapper();
-    }
-
-    @Bean
-    public KapetaController kapetaController() {
-        return new KapetaController();
-    }
-
-    @Bean
-    @ConditionalOnProperty(name = "kapeta.openapi-redirect", havingValue = "true", matchIfMissing = true)
-    public OpenAPIRedirectController openAPIRedirectController() {
-        return new OpenAPIRedirectController();
     }
 }
