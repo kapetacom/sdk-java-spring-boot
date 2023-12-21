@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-package com.kapeta.spring.config;
+package com.kapeta.spring.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
