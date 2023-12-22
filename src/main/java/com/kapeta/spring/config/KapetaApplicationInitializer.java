@@ -57,7 +57,7 @@ public class KapetaApplicationInitializer implements ApplicationListener<Applica
     public static final String DEFAULT_SYSTEM_ID = "";
     public static final String DEFAULT_INSTANCE_ID = "";
 
-    public static final String HEALTH_CHECK_ENDPOINT = "/__kapeta/health";
+    public static final String HEALTH_CHECK_ENDPOINT = "/.kapeta/health";
 
     @Override
     public void onApplicationEvent(ApplicationPreparedEvent event) {
