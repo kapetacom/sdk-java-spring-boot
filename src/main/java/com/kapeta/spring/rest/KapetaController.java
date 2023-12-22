@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.io.IOException;
 
 @Controller
-@RequestMapping("__kapeta")
+@RequestMapping(".kapeta")
 public class KapetaController {
 
     @Autowired
