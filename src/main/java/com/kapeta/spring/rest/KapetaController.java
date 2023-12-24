@@ -6,6 +6,7 @@
 package com.kapeta.spring.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,10 +16,14 @@ import java.io.IOException;
 
 @Controller
 @RequestMapping(".kapeta")
+@Hidden
 public class KapetaController {
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
+
+    public KapetaController(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @RequestMapping("health")
     public void health(HttpServletResponse response) throws IOException {
