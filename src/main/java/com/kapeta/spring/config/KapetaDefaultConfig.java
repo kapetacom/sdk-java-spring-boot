@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kapeta.spring.rest.KapetaController;
 import com.kapeta.spring.rest.OpenAPIRedirectController;
+import com.kapeta.spring.security.AuthorizationForwarder;
+import com.kapeta.spring.security.AuthorizationForwarderSupplier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -55,6 +57,12 @@ public class KapetaDefaultConfig {
     @Bean
     public KapetaController kapetaController(ObjectMapper objectMapper) {
         return new KapetaController(objectMapper);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(AuthorizationForwarderSupplier.class)
+    public AuthorizationForwarderSupplier authorizationForwarderSupplier() {
+        return () -> null;
     }
 
     @Bean

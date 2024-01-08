@@ -61,8 +61,6 @@ public class ConfigUtils {
         return out;
     }
 
-
-
     private static void applyYAMLFromStream(Environment environment, InputStream stream, Properties properties) throws IOException {
         final Yaml yaml = new Yaml();
 
@@ -80,8 +78,13 @@ public class ConfigUtils {
     public static void applyFlattenedObjectToProperties(Environment environment, Object object, Properties properties) {
         final Map<String, Object> stringObjectMap = asFlatMap(environment, object);
         for (Map.Entry<String, Object> entry : stringObjectMap.entrySet()) {
-            properties.setProperty(entry.getKey(), String.valueOf(entry.getValue()));
+            // Spring Boot uses kebab case for properties and will behave better if we do the same
+            properties.setProperty(camelCaseToKebabCase(entry.getKey()), String.valueOf(entry.getValue()));
         }
+    }
+
+    private static String camelCaseToKebabCase(String camelCase) {
+        return camelCase.replaceAll("(.)(\\p{Upper})", "$1-$2").toLowerCase();
     }
 
     /**
