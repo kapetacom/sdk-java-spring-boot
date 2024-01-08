@@ -1,5 +1,8 @@
+/*
+ * Copyright 2023 Kapeta Inc.
+ * SPDX-License-Identifier: MIT
+ */
 package com.kapeta.spring.config;
-
 
 public class InstanceProviderValue {
     private String id;
