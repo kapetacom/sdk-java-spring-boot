@@ -14,8 +14,13 @@ import static com.kapeta.spring.config.ConfigUtils.applyFlattenedObjectToPropert
 
 
 public class PropertiesConfigurationSource extends PropertySource<Object> {
-    private static final String SERVER_PORT = "server.port";
 
+    public static final String KAPETA_BLOCK_REF = "kapeta.block.ref";
+    public static final String KAPETA_INSTANCE_ID = "kapeta.instance.id";
+    public static final String KAPETA_SYSTEM_ID = "kapeta.system.id";
+    public static final String KAPETA_SYSTEM_TYPE = "kapeta.system.type";
+
+    private static final String SERVER_PORT = "server.port";
     private static final String SERVER_HOST = "server.host";
 
     private final Properties properties;
@@ -29,13 +34,17 @@ public class PropertiesConfigurationSource extends PropertySource<Object> {
 
         applyFlattenedObjectToProperties(configurationProvider.getEnvironment(), instanceConfig, properties);
 
-        properties.put(SERVER_PORT, configurationProvider.getServerPort());
-        properties.put(SERVER_HOST, configurationProvider.getServerHost());
+        setProperty(SERVER_PORT, configurationProvider.getServerPort());
+        setProperty(SERVER_HOST, configurationProvider.getServerHost());
     }
 
     @Override
     public Object getProperty(String name) {
         return properties.get(name);
+    }
+
+    void setProperty(String name, Object value) {
+        properties.put(name, value);
     }
 
 }

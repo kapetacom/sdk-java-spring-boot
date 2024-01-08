@@ -108,6 +108,11 @@ public class KapetaApplicationInitializer implements ApplicationListener<Applica
             };
 
             var configSource = new PropertiesConfigurationSource(configProvider);
+            configSource.setProperty(PropertiesConfigurationSource.KAPETA_SYSTEM_TYPE, systemType);
+            configSource.setProperty(PropertiesConfigurationSource.KAPETA_SYSTEM_ID, systemId);
+            configSource.setProperty(PropertiesConfigurationSource.KAPETA_BLOCK_REF, blockRef);
+            configSource.setProperty(PropertiesConfigurationSource.KAPETA_INSTANCE_ID, instanceId);
+
             MutablePropertySources propertySources = environment.getPropertySources();
             propertySources.addFirst(configSource);
 
