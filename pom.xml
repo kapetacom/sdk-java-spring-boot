@@ -7,7 +7,7 @@
     <groupId>com.kapeta</groupId>
     <artifactId>spring-boot</artifactId>
     <packaging>jar</packaging>
-    <version>0.2.1</version>
+    <version>0.3.0</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Kapeta Spring Boot SDK</description>
@@ -176,6 +176,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-commons</artifactId>
         </dependency>
 
         <dependency>

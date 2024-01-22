@@ -11,12 +11,20 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.kapeta.spring.config.pageable.PageableDeserializer;
+import com.kapeta.spring.config.pageable.PageableSerializer;
 import com.kapeta.spring.security.AuthorizationForwarderSupplier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.ReadingConverter;
+import org.springframework.data.convert.WritingConverter;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Default configuration for kapeta
@@ -25,14 +33,23 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 public class KapetaDefaultConfig {
 
     public static ObjectMapper createDefaultObjectMapper() {
-        return JsonMapper.builder()
+        var om = JsonMapper.builder()
                 .addModule(new JavaTimeModule())
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true)
                 .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
                 .serializationInclusion(JsonInclude.Include.NON_NULL)
                 .build();
+
+        SimpleModule pageableModule = new SimpleModule();
+        pageableModule.addSerializer(Pageable.class, new PageableSerializer());
+        pageableModule.addDeserializer(Pageable.class, new PageableDeserializer(om));
+        om.registerModule(pageableModule);
+
+        return om;
     }
+
+
 
 
     /**
