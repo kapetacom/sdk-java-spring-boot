@@ -1,3 +1,7 @@
+/*
+ * Copyright 2023 Kapeta Inc.
+ * SPDX-License-Identifier: MIT
+ */
 package com.kapeta.spring.config.pageable;
 
 import com.fasterxml.jackson.core.JacksonException;
