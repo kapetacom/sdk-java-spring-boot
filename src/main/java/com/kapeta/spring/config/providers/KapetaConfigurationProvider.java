@@ -5,9 +5,14 @@
 
 package com.kapeta.spring.config.providers;
 
+import com.kapeta.schemas.entity.BlockDefinition;
+import com.kapeta.schemas.entity.Connection;
 import org.springframework.core.env.Environment;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public interface KapetaConfigurationProvider {
@@ -63,13 +68,90 @@ public interface KapetaConfigurationProvider {
     /**
      * Gets the configuration for the current instance
      */
-    Map<String,Object> getInstanceConfig() throws Exception;
+    Map<String, Object> getInstanceConfig() throws Exception;
 
     /**
      * Get unique source ID for this configuration source
      */
     String getProviderId();
 
+    <BlockType> BlockInstanceDetails<BlockType> getInstanceForConsumer(String resourceName, Class<BlockType> clz) throws IOException;
+
+    default BlockInstanceDetails<BlockDefinition> getInstanceForConsumer(String resourceName) throws IOException {
+        return getInstanceForConsumer(resourceName, BlockDefinition.class);
+    }
+
+    <Options, Credentials> InstanceOperator<Options, Credentials> getInstanceOperator(String instanceId, Class<Options> optionsClass, Class<Credentials> credentialsClass) throws IOException;
+
+    default <Options> InstanceOperator<Options, DefaultCredentials> getInstanceOperator(String instanceId, Class<Options> optionsClass) throws IOException {
+        return getInstanceOperator(instanceId, optionsClass, DefaultCredentials.class);
+    }
+
+    default InstanceOperator<DefaultOptions, DefaultCredentials> getInstanceOperator(String instanceId) throws IOException {
+        return getInstanceOperator(instanceId, DefaultOptions.class);
+    }
+
+    <BlockType> List<BlockInstanceDetails<BlockType>> getInstancesForProvider(String resourceName, Class<BlockType> clz) throws IOException;
+
+    default List<BlockInstanceDetails<BlockDefinition>> getInstancesForProvider(String resourceName) throws IOException {
+        return getInstancesForProvider(resourceName, BlockDefinition.class);
+    }
+
+    class DefaultOptions extends HashMap<String, String> {
+    }
+
+    class DefaultCredentials {
+        private String username;
+        private String password;
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+    }
+
+    class BlockInstanceDetails<BlockType> {
+        private String instanceId;
+
+        private BlockType block;
+
+        private List<Connection> connections = new ArrayList<>();
+
+        public String getInstanceId() {
+            return instanceId;
+        }
+
+        public void setInstanceId(String instanceId) {
+            this.instanceId = instanceId;
+        }
+
+        public BlockType getBlock() {
+            return block;
+        }
+
+        public void setBlock(BlockType block) {
+            this.block = block;
+        }
+
+        public List<Connection> getConnections() {
+            return connections;
+        }
+
+        public void setConnections(List<Connection> connections) {
+            this.connections = connections;
+        }
+    }
 
     class InstanceInfo {
 
@@ -161,6 +243,94 @@ public interface KapetaConfigurationProvider {
 
         public void setResource(String resource) {
             this.resource = resource;
+        }
+    }
+
+
+    class InstanceOperatorPort {
+        private String protocol;
+        private int port;
+
+        public String getProtocol() {
+            return protocol;
+        }
+
+        public void setProtocol(String protocol) {
+            this.protocol = protocol;
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public void setPort(int port) {
+            this.port = port;
+        }
+    }
+
+    class InstanceOperator<Options,Credentials> {
+        private String hostname;
+        private Map<String, InstanceOperatorPort> ports = new HashMap<>();
+        private String path;
+        private String query;
+        private String hash;
+        private Credentials credentials;
+        private Options options;
+
+        public String getHostname() {
+            return hostname;
+        }
+
+        public void setHostname(String hostname) {
+            this.hostname = hostname;
+        }
+
+        public Map<String, InstanceOperatorPort> getPorts() {
+            return ports;
+        }
+
+        public void setPorts(Map<String, InstanceOperatorPort> ports) {
+            this.ports = ports;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+
+        public String getQuery() {
+            return query;
+        }
+
+        public void setQuery(String query) {
+            this.query = query;
+        }
+
+        public String getHash() {
+            return hash;
+        }
+
+        public void setHash(String hash) {
+            this.hash = hash;
+        }
+
+        public Credentials getCredentials() {
+            return credentials;
+        }
+
+        public void setCredentials(Credentials credentials) {
+            this.credentials = credentials;
+        }
+
+        public Options getOptions() {
+            return options;
+        }
+
+        public void setOptions(Options options) {
+            this.options = options;
         }
     }
 }

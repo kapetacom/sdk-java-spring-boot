@@ -5,20 +5,24 @@
 
 package com.kapeta.spring.config.providers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kapeta.schemas.entity.BlockDefinition;
+import com.kapeta.schemas.entity.BlockInstance;
+import com.kapeta.schemas.entity.Connection;
+import com.kapeta.schemas.entity.Plan;
 import com.kapeta.spring.config.SimpleHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.system.ApplicationPid;
+import org.springframework.cglib.core.Block;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -82,7 +86,7 @@ public class LocalClusterServiceConfigProvider implements KapetaConfigurationPro
         var envVarName = "KAPETA_LOCAL_SERVER_PORT_%s".formatted(portType.toUpperCase());
         var envVarValue = environment.getProperty(envVarName);
 
-        if (!StringUtils.isEmpty(envVarValue)) {
+        if (StringUtils.hasText(envVarValue)) {
             return Integer.parseInt(envVarValue);
         }
 
@@ -180,7 +184,7 @@ public class LocalClusterServiceConfigProvider implements KapetaConfigurationPro
 
         String response = httpClient.sendGET(url);
 
-        if (StringUtils.isEmpty(response)) {
+        if (!StringUtils.hasText(response)) {
             return new HashMap<>();
         }
 
@@ -191,6 +195,123 @@ public class LocalClusterServiceConfigProvider implements KapetaConfigurationPro
     @Override
     public String getProviderId() {
         return getClusterServiceBaseUrl();
+    }
+
+    @Override
+    public <BlockType> BlockInstanceDetails<BlockType> getInstanceForConsumer(String resourceName, Class<BlockType> clz) throws IOException {
+        Plan plan = getPlan();
+        if (plan == null) {
+            throw new RuntimeException("Could not find plan");
+        }
+
+        String instanceId = httpClient.getInstanceId();
+        var connection = plan.getSpec().getConnections().stream()
+                .filter(conn -> conn.getConsumer().getBlockId().equals(instanceId)
+                        && conn.getConsumer().getResourceName().equals(resourceName))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Could not find connection for consumer " + resourceName));
+
+        var instance = plan.getSpec().getBlocks().stream()
+                .filter(b -> b.getId().equals(connection.getProvider().getBlockId()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Could not find instance " + connection.getProvider().getBlockId() + " in plan"));
+
+        var block = getAsset(instance.getBlock().getRef(), clz);
+        if (block == null) {
+            throw new RuntimeException("Could not find block " + instance.getBlock().getRef() + " in plan");
+        }
+
+        var details = new BlockInstanceDetails<BlockType>();
+        details.setInstanceId(connection.getProvider().getBlockId());
+        details.setConnections(List.of(connection));
+        details.setBlock(block);
+
+        return details;
+    }
+
+    @Override
+    public <BlockType> List<BlockInstanceDetails<BlockType>> getInstancesForProvider(String resourceName, Class<BlockType> clz) throws IOException {
+        Plan plan = getPlan();
+        if (plan == null) {
+            throw new RuntimeException("Could not find plan");
+        }
+
+        String instanceId = httpClient.getInstanceId();
+        var blockDetails = new HashMap<String, BlockInstanceDetails<BlockType>>();
+
+        var connections = plan.getSpec().getConnections().stream()
+                .filter(connection -> connection.getProvider().getBlockId().equals(instanceId)
+                        && connection.getProvider().getResourceName().equals(resourceName))
+                .toList();
+
+        for (Connection connection : connections) {
+            String blockInstanceId = connection.getConsumer().getBlockId();
+            if (blockDetails.containsKey(blockInstanceId)) {
+                blockDetails.get(blockInstanceId).getConnections().add(connection);
+                continue;
+            }
+
+            var instance = plan.getSpec().getBlocks().stream()
+                    .filter(b -> b.getId().equals(blockInstanceId))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Could not find instance " + blockInstanceId + " in plan"));
+
+            var block = getAsset(instance.getBlock().getRef(), clz);
+            if (block == null) {
+                throw new RuntimeException("Could not find block " + instance.getBlock().getRef() + " in plan");
+            }
+
+            var details = blockDetails.get(blockInstanceId);
+            if (details == null) {
+                details = new BlockInstanceDetails<>();
+                details.setInstanceId(blockInstanceId);
+                details.setBlock(block);
+                details.setConnections(new ArrayList<>());
+                blockDetails.put(blockInstanceId, details);
+
+            }
+            details.getConnections().add(connection);
+        }
+
+        return new ArrayList<>(blockDetails.values());
+    }
+
+    public Plan getPlan() throws IOException {
+        return getAsset(getSystemId(), Plan.class);
+    }
+
+    public BlockDefinition getBlock(String ref) throws IOException {
+        return getAsset(ref, BlockDefinition.class);
+    }
+
+    public <AssetType> AssetType getAsset(String ref, Class<AssetType> clz) throws IOException {
+        String url = getAssetReadUrl(ref);
+        var response = httpClient.sendGET(url);
+        if (!StringUtils.hasText(response)) {
+            return null;
+        }
+        var type = new TypeReference<AssetWrapper<AssetType>>() {};
+        return objectMapper.readValue(response, type).getData();
+    }
+
+
+    @Override
+    public <Options, Credentials> InstanceOperator<Options, Credentials> getInstanceOperator(String instanceId, Class<Options> optionsClass, Class<Credentials> credentialsClass) throws IOException {
+        var url = getInstanceOperatorUrl(instanceId);
+        String response = httpClient.sendGET(url);
+
+        if (!StringUtils.hasText(response)) {
+            return null;
+        }
+
+        var typeRef = new TypeReference<InstanceOperator<Options, Credentials>>() {};
+
+        return objectMapper.readValue(response, typeRef);
+    }
+
+    private String getInstanceOperatorUrl(String instanceId) {
+        String subPath = String.format("/operator/%s", encode(instanceId));
+        return getConfigBaseUrl() + subPath;
     }
 
     private String getInstanceConfigUrl() {
@@ -271,6 +392,12 @@ public class LocalClusterServiceConfigProvider implements KapetaConfigurationPro
         return getClusterServiceBaseUrl() + "/config";
     }
 
+    private String getAssetReadUrl(String ref) {
+        String subPath = String.format("/assets/read?ref=%s", encode(ref));
+
+        return this.getClusterServiceBaseUrl() + subPath;
+    }
+
     private String getProviderPortUrl(String serviceType) {
 
         String subPath = String.format("/provides/%s", encode(serviceType));
@@ -306,5 +433,17 @@ public class LocalClusterServiceConfigProvider implements KapetaConfigurationPro
     private static class Identity {
         public String systemId;
         public String instanceId;
+    }
+
+    private static class AssetWrapper<T> {
+        private T data;
+
+        public T getData() {
+            return data;
+        }
+
+        public void setData(T data) {
+            this.data = data;
+        }
     }
 }
