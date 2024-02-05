@@ -165,13 +165,13 @@ public class KapetaApplicationInitializer implements ApplicationListener<Applica
 
     private static String getSystemConfiguration(final Environment environment, String propertyKey, String environmentKey, String configKey, String defaultValue) {
         String value = System.getProperty(propertyKey);
-        if (!StringUtils.isEmpty(value)) {
+        if (StringUtils.hasText(value)) {
             return value;
         }
 
         value = System.getenv(environmentKey);
 
-        if (!StringUtils.isEmpty(value)) {
+        if (StringUtils.hasText(value)) {
             return value;
         }
 

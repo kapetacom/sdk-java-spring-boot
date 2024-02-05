@@ -7,6 +7,7 @@ package com.kapeta.spring.annotation;
 
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.context.TypeExcludeFilter;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
@@ -18,7 +19,9 @@ import java.lang.annotation.*;
 @Documented
 @Inherited
 @SpringBootConfiguration
-@EnableAutoConfiguration
+@EnableAutoConfiguration(
+    exclude = RabbitAutoConfiguration.class
+)
 @ComponentScan(excludeFilters = {
         @ComponentScan.Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class)
 })
