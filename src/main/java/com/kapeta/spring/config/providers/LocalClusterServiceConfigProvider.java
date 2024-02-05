@@ -5,17 +5,18 @@
 
 package com.kapeta.spring.config.providers;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kapeta.schemas.entity.BlockDefinition;
-import com.kapeta.schemas.entity.BlockInstance;
 import com.kapeta.schemas.entity.Connection;
 import com.kapeta.schemas.entity.Plan;
 import com.kapeta.spring.config.SimpleHttpClient;
+import com.kapeta.spring.config.providers.types.BlockInstanceDetails;
+import com.kapeta.spring.config.providers.types.InstanceInfo;
+import com.kapeta.spring.config.providers.types.InstanceOperator;
+import com.kapeta.spring.config.providers.types.ResourceInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.system.ApplicationPid;
-import org.springframework.cglib.core.Block;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
@@ -277,11 +278,11 @@ public class LocalClusterServiceConfigProvider implements KapetaConfigurationPro
     }
 
     public Plan getPlan() throws IOException {
-        return getAsset(getSystemId(), Plan.class);
+        return this.getAsset(getSystemId(), Plan.class);
     }
 
     public BlockDefinition getBlock(String ref) throws IOException {
-        return getAsset(ref, BlockDefinition.class);
+        return this.getAsset(ref, BlockDefinition.class);
     }
 
     public <AssetType> AssetType getAsset(String ref, Class<AssetType> clz) throws IOException {
@@ -290,8 +291,12 @@ public class LocalClusterServiceConfigProvider implements KapetaConfigurationPro
         if (!StringUtils.hasText(response)) {
             return null;
         }
-        var type = new TypeReference<AssetWrapper<AssetType>>() {};
-        return objectMapper.readValue(response, type).getData();
+
+        var javaType = objectMapper.getTypeFactory()
+                .constructParametricType(AssetWrapper.class, clz);
+
+        var wrapper = objectMapper.<AssetWrapper<AssetType>>readValue(response, javaType);
+        return wrapper.getData();
     }
 
 
@@ -304,9 +309,10 @@ public class LocalClusterServiceConfigProvider implements KapetaConfigurationPro
             return null;
         }
 
-        var typeRef = new TypeReference<InstanceOperator<Options, Credentials>>() {};
+        var typeRef = objectMapper.getTypeFactory()
+                .constructParametricType(InstanceOperator.class, optionsClass, credentialsClass);
 
-        return objectMapper.readValue(response, typeRef);
+        return objectMapper.<InstanceOperator<Options, Credentials>>readValue(response, typeRef);
     }
 
     private String getInstanceOperatorUrl(String instanceId) {

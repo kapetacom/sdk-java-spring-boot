@@ -5,9 +5,11 @@
 
 package com.kapeta.spring.config.providers;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kapeta.spring.config.providers.types.BlockInstanceDetails;
+import com.kapeta.spring.config.providers.types.InstanceOperator;
+import com.kapeta.spring.config.providers.types.ResourceInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
@@ -142,7 +144,8 @@ public class KubernetesConfigProvider implements KapetaConfigurationProvider {
     public <Options, Credentials> InstanceOperator<Options, Credentials> getInstanceOperator(String instanceId, Class<Options> optionsClass, Class<Credentials> credentialsClass) throws IOException {
         var envVarName = "KAPETA_INSTANCE_OPERATOR_%s".formatted(toEnvName(instanceId));
         var value = requireEnvVar(envVarName);
-        var typeRef = new TypeReference<InstanceOperator<Options, Credentials>>() {};
+        var typeRef = objectMapper.getTypeFactory()
+                .constructParametricType(InstanceOperator.class, optionsClass, credentialsClass);
         try {
             return objectMapper.readValue(value, typeRef);
         } catch (IOException e) {
@@ -154,7 +157,8 @@ public class KubernetesConfigProvider implements KapetaConfigurationProvider {
     public <BlockType> BlockInstanceDetails<BlockType> getInstanceForConsumer(String resourceName, Class<BlockType> clz) throws IOException {
         var envVarName = "KAPETA_INSTANCE_FOR_CONSUMER_%s".formatted(toEnvName(resourceName));
         var value = requireEnvVar(envVarName);
-        var typeRef = new TypeReference<BlockInstanceDetails<BlockType>>() {};
+        var typeRef = objectMapper.getTypeFactory()
+                .constructParametricType(BlockInstanceDetails.class, clz);
         try {
             return objectMapper.readValue(value, typeRef);
         } catch (IOException e) {
@@ -167,7 +171,8 @@ public class KubernetesConfigProvider implements KapetaConfigurationProvider {
     public <BlockType> List<BlockInstanceDetails<BlockType>> getInstancesForProvider(String resourceName, Class<BlockType> clz) throws IOException {
         var envVarName = "KAPETA_INSTANCES_FOR_PROVIDER_%s".formatted(toEnvName(resourceName));
         var value = requireEnvVar(envVarName);
-        var typeRef = new TypeReference<List<BlockInstanceDetails<BlockType>>>() {};
+        var typeRef = objectMapper.getTypeFactory()
+                .constructParametricType(BlockInstanceDetails.class, clz);
         try {
             return objectMapper.readValue(value, typeRef);
         } catch (IOException e) {
