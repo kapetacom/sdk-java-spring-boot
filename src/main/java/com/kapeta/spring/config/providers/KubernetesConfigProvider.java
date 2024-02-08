@@ -173,8 +173,9 @@ public class KubernetesConfigProvider implements KapetaConfigurationProvider {
         var value = requireEnvVar(envVarName);
         var typeRef = objectMapper.getTypeFactory()
                 .constructParametricType(BlockInstanceDetails.class, clz);
+        var listTypeRef = objectMapper.getTypeFactory().constructCollectionLikeType(List.class, typeRef);
         try {
-            return objectMapper.readValue(value, typeRef);
+            return objectMapper.readValue(value, listTypeRef);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to parse resource info from env var: %s".formatted(envVarName), e);
         }
