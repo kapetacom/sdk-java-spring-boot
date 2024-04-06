@@ -5,6 +5,7 @@
 
 package com.kapeta.spring.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kapeta.spring.config.providers.KapetaConfigurationProvider;
 import com.kapeta.spring.config.providers.KubernetesConfigProvider;
 import com.kapeta.spring.config.providers.LocalClusterServiceConfigProvider;
@@ -15,6 +16,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.Yaml;
@@ -48,10 +50,13 @@ public class KapetaApplicationInitializer implements ApplicationListener<Applica
 
     public static final String KAPETA_BASE_DIR = "KAPETA_BASE_DIR";
 
+    public static final String KAPETA_CONFIG_PATH = "KAPETA_CONFIG_PATH";
+
     public static final String CONFIG_KAPETA_SYSTEM_TYPE = "kapeta.system.type";
     public static final String CONFIG_KAPETA_SYSTEM_ID = "kapeta.system.id";
     public static final String CONFIG_KAPETA_BLOCK_REF = "kapeta.block.ref";
     public static final String CONFIG_KAPETA_INSTANCE_ID = "kapeta.instance.id";
+
 
     public static final String DEFAULT_SYSTEM_TYPE = "development";
     public static final String DEFAULT_SYSTEM_ID = "";
@@ -67,6 +72,13 @@ public class KapetaApplicationInitializer implements ApplicationListener<Applica
 
         String blockYMLPath = getBlockYMLPath(environment);
         String blockRefLocal = getBlockRef(blockYMLPath);
+
+
+        // Read environment variables and system properties from json file
+        final String configPath = System.getenv(KAPETA_CONFIG_PATH);
+        if (StringUtils.hasText(configPath)) {
+            applyConfigFile(environment, configPath);
+        }
 
         final String systemType = getSystemConfiguration(environment,
                 KAPETA_SYSTEM_TYPE,
@@ -87,6 +99,7 @@ public class KapetaApplicationInitializer implements ApplicationListener<Applica
                 KAPETA_INSTANCE_ID,
                 CONFIG_KAPETA_INSTANCE_ID,
                 DEFAULT_INSTANCE_ID);
+
 
         log.info("Starting block instance for block: '{}'", blockRef);
 
@@ -125,6 +138,18 @@ public class KapetaApplicationInitializer implements ApplicationListener<Applica
             System.exit(1); //Do a hard exit here - we need to cluster service to be available to continue
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialise kapeta config source for environment: " + systemType + " in system " + systemId, e);
+        }
+    }
+
+    private void applyConfigFile(ConfigurableEnvironment environment, String configPath) {
+        try {
+            var om = new ObjectMapper();
+            var type = om.getTypeFactory().constructMapLikeType(HashMap.class, String.class, String.class);
+            Map<String, Object> config = om.readValue(Files.newInputStream(Path.of(configPath)), type);
+            // We add the file-based config source last so that it can be overridden by other sources
+            environment.getPropertySources().addLast(new MapPropertySource(KAPETA_CONFIG_PATH, config));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read config file: " + configPath, e);
         }
     }
 
