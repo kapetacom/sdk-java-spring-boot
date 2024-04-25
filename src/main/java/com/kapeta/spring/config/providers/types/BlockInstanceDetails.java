@@ -24,6 +24,11 @@ public class BlockInstanceDetails<BlockType> {
         this.instanceId = instanceId;
     }
 
+    public BlockInstanceDetails<BlockType> withInstanceId(String instanceId) {
+        this.instanceId = instanceId;
+        return this;
+    }
+
     public BlockType getBlock() {
         return block;
     }
@@ -32,11 +37,32 @@ public class BlockInstanceDetails<BlockType> {
         this.block = block;
     }
 
+    public BlockInstanceDetails<BlockType> withBlock(BlockType block) {
+        this.block = block;
+        return this;
+    }
+
     public List<Connection> getConnections() {
         return connections;
     }
 
     public void setConnections(List<Connection> connections) {
         this.connections = connections;
+    }
+
+    public BlockInstanceDetails<BlockType> withConnections(List<Connection> connections) {
+        this.connections = connections;
+        return this;
+    }
+
+    public BlockInstanceDetails<BlockType> withConnection(Connection connection) {
+        this.connections.add(connection);
+        return this;
+    }
+
+    public static <BlockType> BlockInstanceDetails<BlockType> fromBlock(BlockType block) {
+        BlockInstanceDetails<BlockType> out = new BlockInstanceDetails<>();
+        out.setBlock(block);
+        return out;
     }
 }
