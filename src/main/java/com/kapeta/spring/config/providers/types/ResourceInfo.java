@@ -78,4 +78,51 @@ public class ResourceInfo {
     public void setResource(String resource) {
         this.resource = resource;
     }
+
+    public ResourceInfo withHost(String host) {
+        this.host = host;
+        return this;
+    }
+
+    public ResourceInfo withPort(String port) {
+        this.port = port;
+        return this;
+    }
+
+    public ResourceInfo withType(String type) {
+        this.type = type;
+        return this;
+    }
+
+    public ResourceInfo withProtocol(String protocol) {
+        this.protocol = protocol;
+        return this;
+    }
+
+    public ResourceInfo withOptions(Map<String, Object> options) {
+        this.options = options;
+        return this;
+    }
+
+    public ResourceInfo withOption(String key, Object value) {
+        this.options.put(key, value);
+        return this;
+    }
+
+    public ResourceInfo withCredentials(Map<String, String> credentials) {
+        this.credentials = credentials;
+        return this;
+    }
+
+    public ResourceInfo withCredential(String key, String value) {
+        this.credentials.put(key, value);
+        return this;
+    }
+
+
+    public ResourceInfo withResource(String resource) {
+        this.resource = resource;
+        return this;
+    }
+
 }
